@@ -1,0 +1,4 @@
+function node = lattice_builder(t,i)
+    load("table.mat","table")
+    node = table()
+end
