@@ -1,7 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from typing import Dict, List, Tuple, Callable
 import random
 from scipy.optimize import minimize_scalar
+import NN_Linefit
 
 N_BATT = 5
 BATT_CAP = 5
@@ -13,12 +15,14 @@ STRUCTURE = 'A'
 CITY = 'Seattle'
 BIN_SIZE = 0.1
 NUM_BINS = int((N_BATT * BATT_CAP) // BIN_SIZE)
+STAGE = NN_Linefit.STAGE
 
-def dumb_cost(state):
+def dumb_cost(state: float) -> float:
     # change to a parabola with random x offset
     return 0
 
-def simulate(stage, state, cost_func, num_sim):
+def simulate(stage: int, state: float, 
+             cost_func_arr: List[Callable], num_sim: int, pick_control: bool=False) -> Dict[Tuple[float, int], float]:
     """
     Return a dictionary where with items
     tuple(state,stage) -> average cost
@@ -29,18 +33,23 @@ def simulate(stage, state, cost_func, num_sim):
         costs = [0]
         i_state = state
         states = [i_state]
-        iter_range = range(stage, 24)
+        iter_range = range(stage, STAGE)
         for i in iter_range:
             # pick next stochastic variables
             irr,load = gen_irr_and_load(i, CITY)
-            solar = irr * N_SOLAR * AREA_SOLAR * SOL_EFFICIENCY
+            solar = 0.6 * N_SOLAR * AREA_SOLAR * SOL_EFFICIENCY # irr = 0.6
 
             # pick control
-            # sol = minimize_scalar(lambda control: arbitrage_cost(i, i_state, control, load, solar) +
-            #                      cost_func(next_state(i, i_state, control, irr, load)),
-            #                      bounds = [max(-N_BATT*2,-state),min(2*N_BATT,5*N_BATT-i_state)])
-            # opt_control = sol.x
-            opt_control = np.random.uniform(max(-N_BATT*2,-i_state),min(2*N_BATT,5*N_BATT-i_state))
+            if pick_control:
+                sol = minimize_scalar(lambda control: arbitrage_cost(i, control, load, solar) +
+                                    cost_func_arr[i](next_state(i, i_state, control, irr, load)),
+                                    bounds = [max(-N_BATT*2,-state),min(2*N_BATT,5*N_BATT-i_state)])
+                opt_control = sol.x
+            else:
+                opt_control = np.random.uniform(max(-N_BATT*2,-i_state),min(2*N_BATT,5*N_BATT-i_state))
+            
+            irr,load = gen_irr_and_load(i, CITY)
+            solar = irr * N_SOLAR * AREA_SOLAR * SOL_EFFICIENCY
             # update state
             cost = arbitrage_cost(i, opt_control, load, solar)
             i_state = next_state(i, i_state, opt_control, irr, load)
@@ -75,12 +84,14 @@ def gen_irr_and_load(stage, city):
         means = [0, 0, 0, 0, 0, 0.015, 0.142, 0.356, 0.556,
                  0.712, 0.825, 0.891, 0.902, 0.855, 0.756, 0.612, 0.436, 0.245, 0.098,
                  0.008, 0, 0, 0, 0]
-    else:
+    elif city == "Seattle":
         minVars = [0.6, 0.65, 0.6, 0.55]
         maxVars = [1.40, 1.35, 1.40, 1.45]
         means = [0, 0, 0, 0, 0, 0, 0.072, 0.224, 0.367, 0.498,
                  0.594, 0.654, 0.676, 0.644, 0.562, 0.442, 0.302, 0.158, 0.054, 0,
                  0, 0, 0, 0]
+    else:
+        raise ValueError("City not recognized. Please use 'Phoenix', 'Sacramento', or 'Seattle'.")
         
     consump = [0.52, 0.42, 0.38, 0.35, 0.32, 0.38, 0.62, 0.98, 0.85, 0.68, 0.62, 0.65,
         0.75, 0.68, 0.65, 0.72, 0.95, 1.42, 1.95, 1.65, 1.38, 1.15, 0.88, 0.65]
@@ -93,7 +104,7 @@ def gen_irr_and_load(stage, city):
     load = np.random.uniform(consumpVarMin, consumpVarMax) * consump[stage]
     return irr, load
     
-def next_state(stage, state, control, irr, load):
+def next_state(stage: int, state: float, control, irr, load):
     return state + control * (1/ETA if control < 0 else ETA)
 
 def arbitrage_cost(stage, control, load, solar):
@@ -114,7 +125,12 @@ def buy_sell_rates(stage, structure):
     return arr[zone.index(1)]
 
 if __name__ == "__main__":
-    data = simulate(0, 0, dumb_cost, 1000)
+    data = simulate(0, 0, [dumb_cost for i in range(STAGE)], 1000)
+
+    models = NN_Linefit.backward_pass(data)
+    for i in range(1):
+        data = simulate(0, 0, models, 500, pick_control=True)
+        models = NN_Linefit.backward_pass(data)
 
     for stage in set([key[1] for key in data.keys()]):
         x_values = [key[0] for key in data.keys() if key[1] == stage]
