@@ -11,7 +11,7 @@ N_SOLAR = 10
 AREA_SOLAR = 2
 ETA = 0.949
 SOL_EFFICIENCY = 0.15*0.82
-STRUCTURE = 'A'
+STRUCTURE = 'C'
 CITY = 'Seattle'
 BIN_SIZE = 0.1
 NUM_BINS = int((N_BATT * BATT_CAP) // BIN_SIZE)
@@ -32,19 +32,19 @@ def simulate(stage: int, state: float,
         out_dict = {}
         costs = [0]
         i_state = state
-        states = [i_state]
+        states = [i_state for _ in range(stage)]
         iter_range = range(stage, STAGE)
         for i in iter_range:
             # pick next stochastic variables
             irr,load = gen_irr_and_load(i, CITY)
-            solar = 0.6 * N_SOLAR * AREA_SOLAR * SOL_EFFICIENCY # irr = 0.6
+            solar = irr * N_SOLAR * AREA_SOLAR * SOL_EFFICIENCY # irr = 0.6
 
             # pick control
             if pick_control:
                 sol = minimize_scalar(lambda control: arbitrage_cost(i, control, load, solar) +
-                                    cost_func_arr[i](next_state(i, i_state, control, irr, load)),
+                                    cost_func_arr[i+1](next_state(i, i_state, control, irr, load)),
                                     bounds = [max(-N_BATT*2,-state),min(2*N_BATT,5*N_BATT-i_state)])
-                opt_control = sol.x
+                opt_control = np.clip(sol.x+np.random.uniform(-0.1,0.1), max(-N_BATT*2,-state), min(2*N_BATT,5*N_BATT-i_state))
             else:
                 opt_control = np.random.uniform(max(-N_BATT*2,-i_state),min(2*N_BATT,5*N_BATT-i_state))
             
@@ -53,6 +53,8 @@ def simulate(stage: int, state: float,
             # update state
             cost = arbitrage_cost(i, opt_control, load, solar)
             i_state = next_state(i, i_state, opt_control, irr, load)
+            if i == 5  and pick_control:
+                print(f"irr: {irr},load: {load},control: {opt_control},state: {i_state},cost: {cost}")
             states.append(i_state)
             costs.append(cost)
         cum_costs = np.cumsum(costs[::-1])[::-1]
@@ -125,11 +127,11 @@ def buy_sell_rates(stage, structure):
     return arr[zone.index(1)]
 
 if __name__ == "__main__":
-    data = simulate(0, 0, [dumb_cost for i in range(STAGE)], 1000)
+    data = simulate(0, 0, [dumb_cost for i in range(STAGE)], 100)
 
     models = NN_Linefit.backward_pass(data)
     for i in range(1):
-        data = simulate(0, 0, models, 500, pick_control=True)
+        data = simulate(0, 0, models, 100, pick_control=True)
         models = NN_Linefit.backward_pass(data)
 
     for stage in set([key[1] for key in data.keys()]):

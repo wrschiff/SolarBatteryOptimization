@@ -4,6 +4,10 @@ import numpy as np
 from typing import Dict, List, Tuple
 
 STAGE = 10
+def dummy_cost(state: float) -> float:
+    # A dummy cost function that returns a constant value
+    return 0.0
+
 class NN_Line_Fitting:
     def __init__(self) -> None:
         self.model = nn.Sequential(
@@ -52,5 +56,5 @@ def backward_pass(dict: Dict[Tuple[float, int], float]) -> List[NN_Line_Fitting]
         model = NN_Line_Fitting()
         model.fit(x, y, epochs=100)
         NN_models.append(model)
-    
+    NN_models.append(NN_models[0])
     return NN_models
