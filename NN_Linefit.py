@@ -20,7 +20,7 @@ class NN_Line_Fitting:
         self.criterion = nn.MSELoss()
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=0.001)
 
-    def fit(self, x: torch.Tensor, y: torch.Tensor, epochs: int = 60) -> None:
+    def fit(self, x: torch.Tensor, y: torch.Tensor, epochs: int = 100) -> None:
         for epoch in range(epochs):
             self.optimizer.zero_grad()
             outputs = self.model(x)
@@ -62,5 +62,5 @@ def backward_pass(dict: Dict[Tuple[float, int], float]) -> List[NN_Line_Fitting]
         model = NN_Line_Fitting()
         model.fit(x, y, epochs=100)
         NN_models.append(model)
-    NN_models.append(dummy_cost)
+    NN_models.append(NN_models[0])
     return NN_models
