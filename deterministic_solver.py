@@ -43,7 +43,7 @@ if __name__ == "__main__":
     plot_cost_function(memo)
     policy = extract_policy(memo)
     plot_policy_states(policy,next_state)
-    filename = CITY + '_' + STRUCTURE + '_' + str(N_BATT) + '_' + str(N_SOLAR) +  '_policy.pkl'
+    filename = 'policy/' + CITY + '_' + STRUCTURE + '_' + str(N_BATT) + '_' + str(N_SOLAR) +  '_policy.pkl'
     with open(filename, 'wb') as f:
         pickle.dump(policy, f)
     plt.show()

@@ -6,7 +6,7 @@ N_SOLAR = 20
 STRUCTURE = 'A'
 CITY = 'Phoenix'
 
-policy_filename = CITY + '_' + STRUCTURE + '_' + str(N_BATT) + '_' + str(N_SOLAR) + '_' + str(BUY) + '_policy.pkl'
+policy_filename = 'policy/' + CITY + '_' + STRUCTURE + '_' + str(N_BATT) + '_' + str(N_SOLAR) + '_' + str(BUY) + '_policy.pkl'
 with open(policy_filename, 'rb') as f:
     policy = pickle.load(f)
 

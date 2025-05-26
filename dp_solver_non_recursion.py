@@ -30,8 +30,6 @@ def solve():
                 
                 irr, load = dynamics.get_expected_irr_and_load(stage, CITY)
                 solar = irr * N_SOLAR * AREA_SOLAR * SOL_EFFICIENCY
-                if control > solar:
-                    continue
                 
                 next_index = state_space.searchsorted(state_space[i])
                 cost = dynamics.arbitrage_cost(stage, control, load, solar) + cost_to_go[stage + 1, next_index]
