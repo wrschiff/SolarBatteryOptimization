@@ -8,8 +8,8 @@ N_SOLAR = 10
 AREA_SOLAR = 2
 ETA = 0.949
 SOL_EFFICIENCY = 0.15*0.82
-STRUCTURE = 'B'
-CITY = 'Phoenix'
+STRUCTURE = 'A'
+CITY = 'Sacramento'
 
 N_CONT_DISC = 10
 control_space = np.linspace(-N_BATT*2,2*N_BATT,N_CONT_DISC)
