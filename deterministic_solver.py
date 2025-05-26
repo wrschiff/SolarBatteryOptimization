@@ -31,6 +31,7 @@ def _solve(stage: int, state: float,parameters):
         solar = irr * parameters.N_SOLAR * parameters.AREA_SOLAR * parameters.SOL_EFFICIENCY
         cost = arbitrage_cost(stage, control, load, solar, parameters) + next_cost
         controls_to_costs[(control,) + next_controls] = cost
+    
     return min(controls_to_costs.items(), key=lambda x: x[1])
 
 if __name__ == "__main__":

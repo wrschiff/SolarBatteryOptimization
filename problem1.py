@@ -17,20 +17,24 @@ for struc in structures:
     params.STRUCTURE = struc
     for city in cities:
         params.CITY = city
-        fn = params.pickle_file_name()
-        if os.path.exists(fn):
-            print(f"Policy for {city} and {struc} structure already found at {fn}. Skipping.")
-            continue
-        print(f"Computing policy for {city} and {struc} structure.")
-        # Have not found policy for this condition yet
-        deterministic_solver.memo.clear()
-        for start in params.state_space:
-            deterministic_solver.solve(stage=0, state=start, parameters=params)
-        policy = deterministic_solver.extract_policy(deterministic_solver.memo, params)
-        
-        with open(fn, 'wb') as f:
-            pickle.dump(policy, f)
-            print(f"Policy saved at {fn}.")
+        for batt in range(6):
+            for solar in range(20):
+                params.N_BATT = batt
+                params.N_SOLAR = solar
+                fn = params.pickle_file_name()
+                if os.path.exists(fn):
+                    print(f"Policy for {city} and {struc} structure with {batt} batteries and {solar} solar panels already found at {fn}. Skipping.")
+                    continue
+                print(f"Computing policy for {city} and {struc} structure with {batt} batteries and {solar} solar panels.")
+                # Have not found policy for this condition yet
+                deterministic_solver.memo.clear()
+                for start in params.state_space:
+                    deterministic_solver.solve(stage=0, state=start, parameters=params)
+                policy = deterministic_solver.extract_policy(deterministic_solver.memo, params)
+                
+                with open(fn, 'wb') as f:
+                    pickle.dump(policy, f)
+                    print(f"Policy saved at {fn}.")
 
 # Create and save figures
 fig_dir = 'figures/control_structures'
