@@ -3,7 +3,7 @@ import pickle
 
 N_BATT = 5
 N_SOLAR = 5
-STRUCTURE = 'A'
+STRUCTURE = 'C'
 CITY = 'Seattle'
 
 policy_filename = CITY + '_' + STRUCTURE + '_' + str(N_BATT) + '_' + str(N_SOLAR) + '_policy.pkl'

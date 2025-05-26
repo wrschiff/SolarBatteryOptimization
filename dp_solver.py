@@ -153,7 +153,17 @@ def plot_policy_lines(policy):
     ax.set_xlabel('Stage')
     ax.set_ylabel('State')
     ax.set_title('Policy Lines for ' + CITY + ' with ' + STRUCTURE + ' structure')
-
+def plot_policy_states(policy):
+    fig, ax = plt.subplots()
+    states = state_space
+    stages = np.arange(24)
+    states_grid, stages_grid = np.meshgrid(states, stages, indexing='ij')
+    next_states = np.array([[next_state(states_grid[i,j], policy[(stages_grid[i,j], states_grid[i,j])]) for j in range(len(stages))] for i in range(len(states)-1, -1, -1)])
+    im = ax.imshow(next_states, cmap='viridis', extent=(0, 24, 0, N_BATT*BATT_CAP), aspect='auto')
+    fig.colorbar(im, ax=ax)
+    ax.set_xlabel('Stage')
+    ax.set_ylabel('State')
+    ax.set_title('Policy States for ' + CITY + ' with ' + STRUCTURE + ' structure')
 if __name__ == "__main__":
     term_states = np.linspace(0, N_BATT*BATT_CAP, N_STATE_DISC)
     raws = []
@@ -165,6 +175,7 @@ if __name__ == "__main__":
     plot_cost_function()
     policy = extract_policy(memo)
     plot_policy_lines(policy)
+    plot_policy_states(policy)
     filename = CITY + '_' + STRUCTURE + '_' + str(N_BATT) + '_' + str(N_SOLAR) + '_policy.pkl'
     with open(filename, 'wb') as f:
         pickle.dump(policy, f)
