@@ -77,3 +77,27 @@ def plot_policy_states(policy, next_state, parameters: Parameters):
     ax.set_xlabel('Stage')
     ax.set_ylabel('State')
     ax.set_title('Policy States for ' + parameters.CITY + ' with ' + parameters.STRUCTURE + ' structure')
+
+def plot_tester_states(states):
+    plt.figure()
+    for state_list in states:
+        plt.plot(state_list)
+    plt.xlabel('Time')
+    plt.ylabel('State')
+    plt.title('States Over Time')
+
+def plot_tester_costs(costs):
+    plt.figure()
+    for cost_list in costs:
+        plt.plot(cost_list)
+    plt.xlabel('Time')
+    plt.ylabel('Cost')
+    plt.title('Costs Over Time')
+
+def plot_tester_cum_costs(costs):
+    plt.figure()
+    for cost_list in costs:
+        plt.plot(np.cumsum(cost_list))
+    plt.xlabel('Time')
+    plt.ylabel('Cost')
+    plt.title('Cumulative Costs Over Time')
