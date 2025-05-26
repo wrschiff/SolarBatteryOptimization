@@ -11,7 +11,7 @@ SOL_EFFICIENCY = 0.15*0.82
 STRUCTURE = 'B'
 CITY = 'Seattle'
 MAX_STAGE = 24 * 14
-N_STATE_DISC = 20
+N_STATE_DISC = 100
 
 #EPOCH_COUNT = 1 # times to use starting costs as terminal costs
 
@@ -162,11 +162,11 @@ if __name__ == "__main__":
     for state in term_states:
         out = solve(stage=0, state=state)
         costs[state] = out[1]
-    plot_cost_function()
-    policy = extract_policy(memo)
-    plot_policy_lines(policy)
-    filename = CITY + '_' + STRUCTURE + '_' + str(N_BATT) + '_' + str(N_SOLAR) + '_policy.pkl'
-    with open(filename, 'wb') as f:
-        pickle.dump(policy, f)
-    plt.show()
+    # plot_cost_function()
+    # policy = extract_policy(memo)
+    # plot_policy_lines(policy)
+    # filename = CITY + '_' + STRUCTURE + '_' + str(N_BATT) + '_' + str(N_SOLAR) + '_policy.pkl'
+    # with open(filename, 'wb') as f:
+    #     pickle.dump(policy, f)
+    # plt.show()
 
