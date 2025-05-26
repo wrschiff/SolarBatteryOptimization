@@ -5,6 +5,7 @@ import plotting
 import pickle
 import matplotlib.pyplot as plt
 import os
+import dp_tester
 
 structures = ['A', 'B', 'C']
 cities = ['Phoenix', 'Sacramento', 'Seattle']
@@ -46,3 +47,25 @@ for fn in os.listdir('policies'):
         plt.savefig(fig_fn)
         prev = policy
 
+for fn in os.listdir('policies'):
+    if fn.endswith('.pkl'):
+        city, struc, batt, solar, buy = fn.split('_')
+        with open(os.path.join('policies', fn), 'rb') as f:
+            policy = pickle.load(f)
+        states,costs = dp_tester.test_policy(5, 24*365, policy, params)
+        fig_dir = 'figures/year_sims'
+        if not os.path.exists(fig_dir):
+            os.makedirs(fig_dir)
+        fig_fn = os.path.join(fig_dir, f"{city}_{struc}_state.png")
+        plotting.plot_tester_states(states)
+        plt.title(f"{city}, {struc} structure")
+        plt.savefig(fig_fn)
+        fig_fn = os.path.join(fig_dir, f"{city}_{struc}_cost.png")
+        plotting.plot_tester_costs(costs)
+        plt.title(f"{city}, {struc} structure")
+        plt.savefig(fig_fn)
+        fig_fn = os.path.join(fig_dir, f"{city}_{struc}_cost_diff.png")
+        plotting.plot_tester_cost_diff(costs, prev)
+        plt.title(f"{city}, {struc} structure")
+        plt.savefig(fig_fn)
+        
