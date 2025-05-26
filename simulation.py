@@ -58,7 +58,7 @@ def simulate(stage: int, state: float,
             states.append(i_state)
             costs.append(cost)
         cum_costs = np.cumsum(costs[::-1])[::-1]
-        tups = [(states[i],i) for i in iter_range]
+        tups = [(i,states[i]) for i in iter_range]
         out_dict.update(dict(zip(tups,cum_costs)))
 
         out_dicts.append(out_dict)
