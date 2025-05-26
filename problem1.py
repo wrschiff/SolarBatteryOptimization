@@ -41,31 +41,32 @@ for fn in os.listdir('policies'):
         city, struc, batt, solar, buy = fn.split('_')
         with open(os.path.join('policies', fn), 'rb') as f:
             policy = pickle.load(f)
-        fig_fn = os.path.join(fig_dir, f"{city}_{struc}_policy.png")
+        fig_fn = os.path.join(fig_dir, f"{city}_{struc}_policy_{batt}_{solar}.png")
         plotting.plot_policy_states(policy, deterministic_solver.next_state,parameters=params)
-        plt.title(f"{city}, {struc} structure")
+        plt.title(f"{city}, {struc} structure with {batt} batteries and {solar} solar panels")
         plt.savefig(fig_fn)
+        plt.close('all')
         prev = policy
 
-for fn in os.listdir('policies'):
-    if fn.endswith('.pkl'):
-        city, struc, batt, solar, buy = fn.split('_')
-        with open(os.path.join('policies', fn), 'rb') as f:
-            policy = pickle.load(f)
-        states,costs = dp_tester.test_policy(5, 24*365, policy, params)
-        fig_dir = 'figures/year_sims'
-        if not os.path.exists(fig_dir):
-            os.makedirs(fig_dir)
-        fig_fn = os.path.join(fig_dir, f"{city}_{struc}_state.png")
-        plotting.plot_tester_states(states)
-        plt.title(f"{city}, {struc} structure")
-        plt.savefig(fig_fn)
-        fig_fn = os.path.join(fig_dir, f"{city}_{struc}_cost.png")
-        plotting.plot_tester_costs(costs)
-        plt.title(f"{city}, {struc} structure")
-        plt.savefig(fig_fn)
-        fig_fn = os.path.join(fig_dir, f"{city}_{struc}_cost_diff.png")
-        plotting.plot_tester_cost_diff(costs, prev)
-        plt.title(f"{city}, {struc} structure")
-        plt.savefig(fig_fn)
-        
+# Simulate optimal policies
+for struc in structures:
+    params.STRUCTURE = struc
+    for city in cities:
+        params.CITY = city
+        fn = params.pickle_file_name()
+        if os.path.exists(fn):
+            with open(fn, 'rb') as f:
+                policy = pickle.load(f)
+            states,costs = dp_tester.test_policy(5, 24*365, policy, params)
+            fig_dir = 'figures/year_sims'
+            if not os.path.exists(fig_dir):
+                os.makedirs(fig_dir)
+            fig_fn = os.path.join(fig_dir, f"{city}_{struc}_state_{batt}_{solar}.png")
+            fig_fn = os.path.join(fig_dir, f"{city}_{struc}_cum_cost_{batt}_{solar}.png")
+            plotting.plot_tester_cum_costs(costs)
+            plt.title(f"{city}, {struc} structure with {batt} batteries and {solar} solar panels")
+            plt.savefig(fig_fn)
+            plt.close('all')
+        else:
+            print(f"Policy for {city} and {struc} structure not found. Skipping.")
+
