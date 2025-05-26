@@ -11,11 +11,12 @@ N_SOLAR = 10
 AREA_SOLAR = 2
 ETA = 0.949
 SOL_EFFICIENCY = 0.15*0.82
-STRUCTURE = 'B'
-CITY = 'Seattle'
+STRUCTURE = 'A'
+CITY = 'Phoenix'
 BIN_SIZE = 0.1
 NUM_BINS = int((N_BATT * BATT_CAP) // BIN_SIZE)
 STAGE = NN_Linefit.STAGE
+BUY = False
 
 def dumb_cost(state):
     # change to a parabola with random x offset
@@ -155,7 +156,10 @@ def next_state(stage: int, state: float, control, irr, load):
 
 def arbitrage_cost(stage, control, load, solar):
     p_grid = load - solar + control
-    [buy, sell] = buy_sell_rates(stage, STRUCTURE)
+    if BUY:
+        [buy, sell] = buy_sell_rates(stage, STRUCTURE)
+    else:
+        [buy, sell] = nobuy_sell_rates(stage, STRUCTURE)
     rate = buy if p_grid > 0 else sell
     return p_grid * rate
 
@@ -166,6 +170,18 @@ def buy_sell_rates(stage, structure):
         arr = [[0.1,0.1],[0.15,0.15],[0.3,0.3],[0.1,0.1]]
     else:
         arr = [[0.12,0.06],[0.18,0.09],[0.35,0.07],[0.12,0.06]]
+    
+    zone = [stage < 8, stage < 16, stage < 20, 1]
+    return arr[zone.index(1)]
+
+
+def nobuy_sell_rates(stage, structure):
+    if structure == 'A':
+        return float('inf'), 0.15
+    if structure == 'B':
+        arr = [[float('inf'),0.1],[float('inf'),0.15],[float('inf'),0.3],[float('inf'),0.1]]
+    else:
+        arr = [[float('inf'),0.06],[float('inf'),0.09],[float('inf'),0.07],[float('inf'),0.06]]
     
     zone = [stage < 8, stage < 16, stage < 20, 1]
     return arr[zone.index(1)]
