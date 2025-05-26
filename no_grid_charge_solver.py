@@ -68,8 +68,12 @@ if __name__ == "__main__":
     plot_cost_function(memo)
     policy = extract_policy(memo)
     plot_policy_states(policy,next_state)
+<<<<<<< HEAD
 
     filename = parameters.pickle_file_name(True)
+=======
+    filename = 'policy/'+CITY + '_' + STRUCTURE + '_' + str(N_BATT) + '_' + str(N_SOLAR) + '_NOGRID_' + '_policy.pkl'
+>>>>>>> e76e093a29f76b4548eb2f9f0d8b8c3f25299cfb
     with open(filename, 'wb') as f:
         pickle.dump(policy, f)
     
