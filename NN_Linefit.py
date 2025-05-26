@@ -33,7 +33,7 @@ class NN_Line_Fitting:
         with torch.no_grad():
             return self.model(x).item()
     
-    def __call__(self, x:float) -> torch.Any:
+    def __call__(self, x:float):
         x = torch.tensor([x], dtype=torch.float32)
         with torch.no_grad():
             return self.model(x).item()

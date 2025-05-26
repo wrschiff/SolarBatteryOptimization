@@ -1,13 +1,14 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import pickle
 
 N_BATT = 5
 BATT_CAP = 5
-N_SOLAR = 20
+N_SOLAR = 5
 AREA_SOLAR = 2
 ETA = 0.949
 SOL_EFFICIENCY = 0.15*0.82
-STRUCTURE = 'C'
+STRUCTURE = 'A'
 CITY = 'Seattle'
 MAX_STAGE = 24 * 14
 N_STATE_DISC = 20
@@ -164,5 +165,8 @@ if __name__ == "__main__":
     plot_cost_function()
     policy = extract_policy(memo)
     plot_policy_lines(policy)
+    filename = CITY + '_' + STRUCTURE + '_' + str(N_BATT) + '_' + str(N_SOLAR) + '_policy.pkl'
+    with open(filename, 'wb') as f:
+        pickle.dump(policy, f)
     plt.show()
 
