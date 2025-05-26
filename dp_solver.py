@@ -11,7 +11,7 @@ SOL_EFFICIENCY = 0.15*0.82
 STRUCTURE = 'B'
 CITY = 'Seattle'
 MAX_STAGE = 24 * 14
-N_STATE_DISC = 100
+N_STATE_DISC = 20
 
 #EPOCH_COUNT = 1 # times to use starting costs as terminal costs
 
