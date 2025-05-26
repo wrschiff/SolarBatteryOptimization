@@ -2,11 +2,11 @@ from simulation import *
 import pickle
 
 N_BATT = 5
-N_SOLAR = 5
+N_SOLAR = 20
 STRUCTURE = 'A'
-CITY = 'Seattle'
+CITY = 'Phoenix'
 
-policy_filename = CITY + '_' + STRUCTURE + '_' + str(N_BATT) + '_' + str(N_SOLAR) + '_policy.pkl'
+policy_filename = CITY + '_' + STRUCTURE + '_' + str(N_BATT) + '_' + str(N_SOLAR) + '_' + str(BUY) + '_policy.pkl'
 with open(policy_filename, 'rb') as f:
     policy = pickle.load(f)
 

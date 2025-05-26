@@ -4,15 +4,15 @@ import pickle
 
 N_BATT = 5
 BATT_CAP = 5
-N_SOLAR = 5
+N_SOLAR = 20
 AREA_SOLAR = 2
 ETA = 0.949
 SOL_EFFICIENCY = 0.15*0.82
-STRUCTURE = 'B'
-CITY = 'Seattle'
+STRUCTURE = 'A'
+CITY = 'Phoenix'
 MAX_STAGE = 24 * 14
 N_STATE_DISC = 20
-
+BUY = False
 #EPOCH_COUNT = 1 # times to use starting costs as terminal costs
 
 state_space = np.linspace(0,N_BATT*BATT_CAP,N_STATE_DISC)
@@ -46,6 +46,7 @@ def _solve(stage: int, state: float):
         control = control_from_state(state,next) # compute control needed to get to given state
         if control is None: # control is inadmissible
             continue
+
         next_controls, next_cost = solve(stage+1, next)
         cost = arbitrage_cost(stage, control, load, irr * N_SOLAR * AREA_SOLAR * SOL_EFFICIENCY) + next_cost
         controls_to_costs[(control,) + next_controls] = cost
@@ -94,7 +95,10 @@ def control_from_state(current:float, next: float):
 def arbitrage_cost(stage, control, load, solar):
     stage = stage % 24
     p_grid = load - solar + control
-    [buy, sell] = buy_sell_rates(stage, STRUCTURE)
+    if BUY:
+        [buy, sell] = buy_sell_rates(stage, STRUCTURE)
+    else:
+        [buy, sell] = nobuy_sell_rates(stage, STRUCTURE)
     rate = buy if p_grid > 0 else sell
     return p_grid * rate
 
@@ -105,6 +109,17 @@ def buy_sell_rates(stage, structure):
         arr = [[0.1,0.1],[0.15,0.15],[0.3,0.3],[0.1,0.1]]
     else:
         arr = [[0.12,0.06],[0.18,0.09],[0.35,0.07],[0.12,0.06]]
+    
+    zone = [stage < 8, stage < 16, stage < 20, 1]
+    return arr[zone.index(1)]
+
+def nobuy_sell_rates(stage, structure):
+    if structure == 'A':
+        return float('inf'), 0.15
+    if structure == 'B':
+        arr = [[float('inf'),0.1],[float('inf'),0.15],[float('inf'),0.3],[float('inf'),0.1]]
+    else:
+        arr = [[float('inf'),0.06],[float('inf'),0.09],[float('inf'),0.07],[float('inf'),0.06]]
     
     zone = [stage < 8, stage < 16, stage < 20, 1]
     return arr[zone.index(1)]
@@ -129,14 +144,32 @@ def plot_cost_function():
         all_stages.extend([stage] * len(states))
         all_states.extend(states)
         all_costs.extend(costs)
-    # Plot all at once
-    scatter = ax.scatter(all_stages, all_states, c=all_costs, cmap='viridis')
+    
+    # finite costs vs inf costs
+    finite_indices = [i for i, cost in enumerate(all_costs) if np.isfinite(cost)]
+    inf_indices = [i for i, cost in enumerate(all_costs) if not np.isfinite(cost)]
+
+    # finit is dots
+    scatter = ax.scatter(
+        [all_stages[i] for i in finite_indices],
+        [all_states[i] for i in finite_indices],
+        c=[all_costs[i] for i in finite_indices],
+        cmap='viridis'
+    )
+    # infinite costs as x
+    ax.scatter(
+        [all_stages[i] for i in inf_indices],
+        [all_states[i] for i in inf_indices],
+        marker='x',
+        color='red',
+        label='Infinite cost'
+    )
     cbar = fig.colorbar(scatter, ax=ax)
     cbar.set_label('Cost')
 
     ax.set_xlabel('Stage')
     ax.set_ylabel('State')
-    ax.set_title('Cost Function for ' + CITY + ' with ' + STRUCTURE + ' structure')
+    ax.set_title('Cost Function for ' + CITY + ' with ' + STRUCTURE + ' structure and buy = ' + str(BUY))
 def extract_policy(memo):
     policy = {(stage, state): memo[(stage, state)][0][0] for stage in range(24) for state in state_space}
     return policy
@@ -152,7 +185,7 @@ def plot_policy_lines(policy):
         ax.plot(states, label=str(state))
     ax.set_xlabel('Stage')
     ax.set_ylabel('State')
-    ax.set_title('Policy Lines for ' + CITY + ' with ' + STRUCTURE + ' structure')
+    ax.set_title('Policy Lines for ' + CITY + ' with ' + STRUCTURE + ' structure and buy = ' + str(BUY))
 
 if __name__ == "__main__":
     term_states = np.linspace(0, N_BATT*BATT_CAP, N_STATE_DISC)
@@ -164,8 +197,8 @@ if __name__ == "__main__":
         costs[state] = out[1]
     plot_cost_function()
     policy = extract_policy(memo)
-    plot_policy_lines(policy)
-    filename = CITY + '_' + STRUCTURE + '_' + str(N_BATT) + '_' + str(N_SOLAR) + '_policy.pkl'
+    #plot_policy_lines(policy)
+    filename = CITY + '_' + STRUCTURE + '_' + str(N_BATT) + '_' + str(N_SOLAR) + '_' + str(BUY) +  '_policy.pkl'
     with open(filename, 'wb') as f:
         pickle.dump(policy, f)
     plt.show()
