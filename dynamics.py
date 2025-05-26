@@ -1,5 +1,6 @@
 from parameters import *
-def get_expected_irr_and_load(stage, city):
+def get_expected_irr_and_load(stage, parameters):
+    city = parameters.CITY
     stage = stage % 24
     if city == "Phoenix":
         minVars = [0.8, 0.9, 0.85, 0.8]
@@ -32,7 +33,8 @@ def get_expected_irr_and_load(stage, city):
     irr = means[stage]
     load = consump[stage]
     return irr, load
-def get_irr_and_load_range(stage, city):
+def get_irr_and_load_range(stage, parameters):
+    city = parameters.CITY
     stage = stage % 24
     if city == "Phoenix":
         minVars = [0.8, 0.9, 0.85, 0.8]
@@ -63,14 +65,18 @@ def get_irr_and_load_range(stage, city):
     zone = [stage < 8, stage < 12, stage < 26, 1].index(1)
 
     return [minVars[zone] * means[stage], maxVars[zone] * means[stage]] , [consumpVarMin * consump[stage], consumpVarMax * consump[stage]] #irr, load
-def next_state(state: float, control):
+def next_state(state: float, control, parameters: Parameters):
+    ETA = parameters.ETA
     return state + control * (1/ETA if control < 0 else ETA)
-def control_from_state(current:float, next: float):
+def control_from_state(current:float, next: float, parameters: Parameters):
+    N_BATT = parameters.N_BATT
+    ETA = parameters.ETA
     needed = (next - current) * (ETA if current > next else 1/ETA)
     if needed < max(-N_BATT*2,-current) or needed > min(2*N_BATT,5*N_BATT-current):
         return None
     return needed
-def arbitrage_cost(stage, control, load, solar):
+def arbitrage_cost(stage, control, load, solar, parameters: Parameters):
+    STRUCTURE = parameters.STRUCTURE
     stage = stage % 24
     p_grid = load - solar + control
     [buy, sell] = buy_sell_rates(stage, STRUCTURE)
