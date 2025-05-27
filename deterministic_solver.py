@@ -26,7 +26,6 @@ def _solve(stage: int, state: float,parameters):
         control = control_from_state(state,next,parameters=parameters) # compute control needed to get to given state
         if control is None: # control is inadmissible
             continue
-
         next_controls, next_cost = solve(stage+1, next,parameters)
         solar = irr * parameters.N_SOLAR * parameters.AREA_SOLAR * parameters.SOL_EFFICIENCY
         cost = arbitrage_cost(stage, control, load, solar, parameters) + next_cost
