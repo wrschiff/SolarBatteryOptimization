@@ -112,3 +112,18 @@ def carbon_arbitrage_cost(stage, control, load, solar, parameters: Parameters):
     p_grid = load - solar + control
     CI = get_carbon_emission(stage,parameters)
     return p_grid * CI if p_grid > 0 else 0
+
+def get_load_means(stage, parameters):
+    city = parameters.CITY
+    stage = stage % 24    
+    consump = [0.52, 0.42, 0.38, 0.35, 0.32, 0.38, 0.62, 0.98, 0.85, 0.68, 0.62, 0.65,
+        0.75, 0.68, 0.65, 0.72, 0.95, 1.42, 1.95, 1.65, 1.38, 1.15, 0.88, 0.65]
+    return consump[stage] if city in ["Phoenix", "Sacramento", "Seattle"] else ValueError("City not recognized. Please use 'Phoenix', 'Sacramento', or 'Seattle'.")
+    
+def get_grid_down_energy_threshold(stage, parameters: Parameters):
+    stage = stage % 24
+    _, load_range = get_irr_and_load_range(stage, parameters)
+    
+    # (upper - thres) / (upper - lower) * p(Grid Down) < 0.05 
+    thres = load_range[1] - (load_range[1] - load_range[0]) * 0.05 / parameters.GRID_DOWN_PROB[stage]
+    return thres

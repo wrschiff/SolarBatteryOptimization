@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import dynamics
 from parameters import *
 from scipy.integrate import quad
-parameters = Parameters(N_SOLAR=2, STRUCTURE='B', MAX_STAGE=24*1)
+parameters = Parameters(N_SOLAR=20, STRUCTURE='C', MAX_STAGE=24*7, CITY='Phoenix')
 
 state_space = parameters.state_space
 cost_to_go = np.zeros((parameters.MAX_STAGE + 1, parameters.N_STATE_DISC))
@@ -38,9 +38,9 @@ def solve():
                 irr_range[1] = irr_range[1] * parameters.N_SOLAR * parameters.AREA_SOLAR * parameters.SOL_EFFICIENCY
 
                 next_index = state_space.searchsorted(state_space[i])
-                if irr_range[0] == 0:
-                    integral = arbitrage_cost(stage, control, load_mean, 0, parameters) \
-                        + cost_to_go[stage+1, next_state_index_with_solar(state, control, 0, next_index, parameters)]
+                if irr_range[0] == irr_range[1]:
+                    integral = arbitrage_cost(stage, control, load_mean, irr_range[0], parameters) \
+                        + cost_to_go[stage+1, next_state_index_with_solar(state, control, irr_range[0], next_index, parameters)]
                 else:
                     prob = 1 / (irr_range[1] - irr_range[0])
                     integral = quad(lambda solar: prob*arbitrage_cost(stage, control, load_mean, solar, parameters) \
