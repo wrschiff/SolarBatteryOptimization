@@ -31,6 +31,7 @@ def _solve(stage: int, state: float,parameters):
         solar = irr * parameters.N_SOLAR * parameters.AREA_SOLAR * parameters.SOL_EFFICIENCY
         cost = arbitrage_cost(stage, control, load, solar, parameters) + next_cost
         controls_to_costs[(control,) + next_controls] = cost
+    
     return min(controls_to_costs.items(), key=lambda x: x[1])
 
 if __name__ == "__main__":
@@ -40,10 +41,17 @@ if __name__ == "__main__":
     memo.clear()
     for state in start_states:
         out = solve(stage=0, state=state, parameters=params)
+<<<<<<< HEAD
         costs[state] = out[1]    
     plot_cost_function(memo,params)
     policy = extract_policy(memo,params)
     plot_policy_states(policy, next_state,params)
+=======
+        costs[state] = out[1]
+    plot_cost_function(memo, params)
+    policy = extract_policy(memo, params)
+    plot_policy_states(policy, next_state, params)
+>>>>>>> f2d3e6b967431c3e5e52ff32df17b92074b51116
     filename = params.pickle_file_name()
     with open(filename, 'wb') as f:
         pickle.dump(policy, f)

@@ -20,13 +20,13 @@ def solve(stage: int, state: float, parameters: Parameters):
 def _solve(stage: int, state: float, parameters: Parameters):
     if stage == parameters.MAX_STAGE:
         return [(), term_cost(state, parameters)]
-    irr, load = get_expected_irr_and_load(stage, parameters.CITY)
+    irr, load = get_expected_irr_and_load(stage, parameters)
     controls_to_costs = dict()
     for next in parameters.state_space:
         control = control_from_state(state,next,parameters) # compute control needed to get to given state
         if control is None: # control is inadmissible
             continue
-        irr_range, _ = get_irr_and_load_range(stage, parameters.CITY)
+        irr_range, _ = get_irr_and_load_range(stage, parameters)
         min_sol = irr_range[0] * parameters.N_SOLAR * parameters.AREA_SOLAR * parameters.SOL_EFFICIENCY
         max_sol = irr_range[1] * parameters.N_SOLAR * parameters.AREA_SOLAR * parameters.SOL_EFFICIENCY
         if control > min_sol: # state transition is non deterministic
@@ -46,13 +46,13 @@ def _solve(stage: int, state: float, parameters: Parameters):
             cost_sum = 0
             for p_next in possible_next:
                 next_controls, next_cost = solve(stage+1, p_next, parameters)
-                cost = arbitrage_cost(stage, control, load, irr * parameters.N_SOLAR * parameters.AREA_SOLAR * parameters.SOL_EFFICIENCY) + next_cost
+                cost = arbitrage_cost(stage, control, load, irr * parameters.N_SOLAR * parameters.AREA_SOLAR * parameters.SOL_EFFICIENCY, parameters) + next_cost
                 cost_sum += cost
             
             controls_to_costs[(control,) + next_controls] = cost_sum / n_real
         else:        
             next_controls, next_cost = solve(stage+1, next, parameters)
-            cost = arbitrage_cost(stage, control, load, irr * parameters.N_SOLAR * parameters.AREA_SOLAR * parameters.SOL_EFFICIENCY) + next_cost
+            cost = arbitrage_cost(stage, control, load, irr * parameters.N_SOLAR * parameters.AREA_SOLAR * parameters.SOL_EFFICIENCY, parameters) + next_cost
             controls_to_costs[(control,) + next_controls] = cost
     return min(controls_to_costs.items(), key=lambda x: x[1])
 
@@ -65,11 +65,10 @@ if __name__ == "__main__":
     for state in start_states:
         out = solve(stage=0, state=state, parameters=parameters)
         costs[state] = out[1]
-    plot_cost_function(memo)
-    policy = extract_policy(memo)
-    plot_policy_states(policy,next_state)
-
-    filename = parameters.pickle_file_name(True)
+    plot_cost_function(memo, parameters)
+    policy = extract_policy(memo, parameters)
+    plot_policy_states(policy, next_state, parameters)
+    filename = parameters.pickle_file_name()
     with open(filename, 'wb') as f:
         pickle.dump(policy, f)
     
