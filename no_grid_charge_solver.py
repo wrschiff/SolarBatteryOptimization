@@ -57,7 +57,7 @@ def _solve(stage: int, state: float, parameters: Parameters):
     return min(controls_to_costs.items(), key=lambda x: x[1])
 
 if __name__ == "__main__":
-    parameters = Parameters()
+    parameters = Parameters(N_SOLAR=2, STRUCTURE='B', MAX_STAGE=24*1)
     start_states = np.linspace(0, parameters.N_BATT*parameters.BATT_CAP, parameters.N_STATE_DISC)
     raws = []
     costs = dict()

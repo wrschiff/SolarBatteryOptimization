@@ -9,7 +9,7 @@ def plot_state_cost(state, memo, parameters: Parameters):
     ax.plot(stages, costs, marker='o')
     ax.set_xlabel('State')
     ax.set_ylabel('Cost')
-    ax.set_title('Cost Function for Stage 1, ' + parameters.CITY + ' with ' + parameters.STRUCTURE + ' structure')
+    ax.set_title(f'Cost Function for starting at stage {state}, ' + parameters.CITY + ' with ' + parameters.STRUCTURE + ' structure')
 def plot_cost_function(memo, parameters: Parameters):
     # derive cost function
     fig, ax = plt.subplots()
@@ -18,7 +18,7 @@ def plot_cost_function(memo, parameters: Parameters):
     all_costs = []
     for stage in range(parameters.MAX_STAGE + 1):
         states = [a[1] for a in memo.keys() if a[0] == stage]
-        costs = [memo[(stage, state)][1] for state in states]
+        costs = [np.log(memo[(stage, state)][1]) for state in states]
         all_stages.extend([stage] * len(states))
         all_states.extend(states)
         all_costs.extend(costs)
