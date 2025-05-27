@@ -1,4 +1,6 @@
 from dynamics import *
+
+import parameters
 import matplotlib.pyplot as plt
 def policy_control(stage, state, policy):
     controls = [control for control, _ in policy.items() if control[0] == stage]
@@ -36,3 +38,4 @@ def test_policy(num_sim, length, policy, parameters):
         big_states.append(states)
         big_costs.append(costs)
     return big_states, big_costs
+

@@ -87,3 +87,28 @@ def buy_sell_rates(stage, structure):
     
     zone = [stage < 8, stage < 16, stage < 20, 1]
     return arr[zone.index(1)]
+
+def get_carbon_emission(stage, parameters):
+    city = parameters.CITY
+    stage = stage % 24
+    if city == "Phoenix":
+        emission =  [420, 410, 400, 390, 400, 410, 430, 410, 350,
+                 250, 180, 150, 140, 145, 160, 210, 290, 380, 460,
+                 470, 450, 440, 430, 425]
+    elif city == "Sacramento":
+        emission = [340, 330, 320, 310, 320, 330, 350, 340, 310,
+                 280, 260, 240, 230, 235, 250, 280, 320, 370, 410,
+                 400, 380, 370, 360, 350]
+    elif city == "Seattle":
+        emission =  [120, 110, 100, 100, 100, 110, 120, 130, 140,
+                 135, 130, 125, 120, 120, 125, 130, 140, 150, 160,
+                 150, 140, 130, 125, 120]
+    else:
+        raise ValueError("City not recognized. Please use 'Phoenix', 'Sacramento', or 'Seattle'.")
+    return emission[stage] 
+
+def carbon_arbitrage_cost(stage, control, load, solar, parameters: Parameters):
+    stage = stage % 24
+    p_grid = load - solar + control
+    CI = get_carbon_emission(stage,parameters)
+    return p_grid * CI if p_grid > 0 else 0
