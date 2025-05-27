@@ -23,7 +23,7 @@ def solve():
             
             for i in range(lower_idx, len(state_space)):
                 control = dynamics.control_from_state(state, state_space[i], parameters)
-                if state_space[i] < dynamics.get_grid_down_energy_threshold(stage, parameters):
+                if state_space[i] < dynamics.get_grid_down_energy_threshold(stage+1, parameters):
                     continue
                 if control is None:
                     continue
@@ -49,6 +49,7 @@ def solve():
 if __name__ == "__main__":
     solve()
     print(policy[0, 0])
+    print(dynamics.get_grid_down_energy_threshold(1, parameters))
     plt.imshow(cost_to_go.T, aspect='auto', cmap='viridis', origin='lower')
     plt.colorbar(label='Control')
-    plt.show(  )
+    plt.show()
