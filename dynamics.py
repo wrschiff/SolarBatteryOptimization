@@ -120,3 +120,10 @@ def get_load_means(stage, parameters):
         0.75, 0.68, 0.65, 0.72, 0.95, 1.42, 1.95, 1.65, 1.38, 1.15, 0.88, 0.65]
     return consump[stage] if city in ["Phoenix", "Sacramento", "Seattle"] else ValueError("City not recognized. Please use 'Phoenix', 'Sacramento', or 'Seattle'.")
     
+def get_grid_down_energy_threshold(stage, parameters: Parameters):
+    stage = stage % 24
+    _, load_range = get_irr_and_load_range(stage, parameters)
+    
+    # (upper - thres) / (upper - lower) * p(Grid Down) < 0.05 
+    thres = load_range[1] - (load_range[1] - load_range[0]) * 0.05 / parameters.GRID_DOWN_PROB[stage]
+    return thres
