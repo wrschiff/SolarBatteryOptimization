@@ -16,5 +16,5 @@ class Parameters:
         if 0 not in self.state_space:
             self.state_space = np.insert(self.state_space, 0, 0)
     def pickle_file_name(self):
-        cap = '_NOGRID_' if self.NO_GRID else ''
+        cap = '_NOGRID' if self.NO_GRID else ''
         return 'policies/' + self.CITY + '_' + self.STRUCTURE + '_' + str(self.N_BATT) + '_' + str(self.N_SOLAR) + cap + '_policy.pkl'
