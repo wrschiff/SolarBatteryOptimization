@@ -1,6 +1,6 @@
 from parameters import *
 import random
-def get_expected_irr_and_load(stage, parameters:Parameters):
+def get_expected_irr_and_load(stage, parameters):
     city = parameters.CITY
     stage = stage % 24
     if city == "Phoenix":
@@ -24,8 +24,7 @@ def get_expected_irr_and_load(stage, parameters:Parameters):
     irr = means[stage]
     load = consump[stage]
     return irr, load
-
-def get_irr_and_load_range(stage, parameters: Parameters):
+def get_irr_and_load_range(stage, parameters):
     city = parameters.CITY
     stage = stage % 24
     if city == "Phoenix":
@@ -57,15 +56,12 @@ def get_irr_and_load_range(stage, parameters: Parameters):
     zone = [stage < 8, stage < 12, stage < 26, 1].index(1)
 
     return [minVars[zone] * means[stage], maxVars[zone] * means[stage]] , [consumpVarMin * consump[stage], consumpVarMax * consump[stage]] #irr, load
-
-def gen_irr_and_load(stage, city:Parameters):
+def gen_irr_and_load(stage, city):
     irr , load = get_irr_and_load_range(stage, city)
     return random.uniform(irr[0], irr[1]), random.uniform(load[0], load[1])
-
 def next_state(state: float, control, parameters: Parameters):
     ETA = parameters.ETA
     return state + control * (1/ETA if control < 0 else ETA)
-
 def control_from_state(current:float, next: float, parameters: Parameters):
     N_BATT = parameters.N_BATT
     ETA = parameters.ETA
@@ -73,7 +69,6 @@ def control_from_state(current:float, next: float, parameters: Parameters):
     if needed < max(-N_BATT*2,-current) or needed > min(2*N_BATT,5*N_BATT-current):
         return None
     return needed
-
 def arbitrage_cost(stage, control, load, solar, parameters: Parameters):
     STRUCTURE = parameters.STRUCTURE
     stage = stage % 24
@@ -118,10 +113,10 @@ def carbon_arbitrage_cost(stage, control, load, solar, parameters: Parameters):
     CI = get_carbon_emission(stage,parameters)
     return p_grid * CI if p_grid > 0 else 0
 
-def get_grid_down_energy_threshold(stage, parameters: Parameters):
-    stage = stage % 24
-    _, load_range = get_irr_and_load_range(stage, parameters)
+def get_load_means(stage, parameters):
+    city = parameters.CITY
+    stage = stage % 24    
+    consump = [0.52, 0.42, 0.38, 0.35, 0.32, 0.38, 0.62, 0.98, 0.85, 0.68, 0.62, 0.65,
+        0.75, 0.68, 0.65, 0.72, 0.95, 1.42, 1.95, 1.65, 1.38, 1.15, 0.88, 0.65]
+    return consump[stage] if city in ["Phoenix", "Sacramento", "Seattle"] else ValueError("City not recognized. Please use 'Phoenix', 'Sacramento', or 'Seattle'.")
     
-    # (upper - thres) / (upper - lower) * p(Grid Down) < 0.05 
-    thres = load_range[1] - (load_range[1] - load_range[0]) * 0.05 / parameters.GRID_DOWN_PROB[stage]
-    return thres
