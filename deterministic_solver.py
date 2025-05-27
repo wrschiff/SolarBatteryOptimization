@@ -40,10 +40,10 @@ if __name__ == "__main__":
     memo.clear()
     for state in start_states:
         out = solve(stage=0, state=state, parameters=params)
-        costs[state] = out[1]
-    plot_cost_function(memo)
-    policy = extract_policy(memo)
-    plot_policy_states(policy, next_state)
+        costs[state] = out[1]    
+    plot_cost_function(memo,params)
+    policy = extract_policy(memo,params)
+    plot_policy_states(policy, next_state,params)
     filename = params.pickle_file_name()
     with open(filename, 'wb') as f:
         pickle.dump(policy, f)
