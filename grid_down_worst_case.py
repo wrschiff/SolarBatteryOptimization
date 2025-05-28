@@ -3,9 +3,11 @@ import matplotlib.pyplot as plt
 import dynamics
 from parameters import *
 import plotting
+import pickle
 
 parameters = Parameters(N_SOLAR=2, STRUCTURE='A')
 cities = ['Phoenix', 'Sacramento', 'Seattle']
+structures = ['A', 'B', 'C']
 state_space = np.linspace(0, parameters.N_BATT * parameters.BATT_CAP, parameters.N_STATE_DISC)
 cost_to_go = np.zeros((parameters.MAX_STAGE + 1, parameters.N_STATE_DISC))
 policy = np.zeros((parameters.MAX_STAGE + 1, parameters.N_STATE_DISC))
@@ -50,7 +52,13 @@ def solve():
     return cost_to_go
 
 if __name__ == "__main__":
-    solve()
-    memo = plotting.from_arr_to_dict(policy, parameters)
-    plotting.plot_policy_states(memo, dynamics.next_state, parameters)
-    plt.show()
+    for city in cities:
+        parameters.CITY = city
+        for structure in structures:
+            parameters.STRUCTURE = structure
+            fn = parameters.pickle_file_name_grid_down()
+            solve()
+            memo = plotting.from_arr_to_dict(policy, parameters)
+            with open(fn, 'wb') as f:
+                pickle.dump(memo, f)
+                print(f"Policy saved at {fn} for {city} with structure {structure}.")

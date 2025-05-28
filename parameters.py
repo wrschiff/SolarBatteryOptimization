@@ -21,3 +21,5 @@ class Parameters:
     def pickle_file_name(self):
         cap = '_NOGRID_' if self.NO_GRID else ''
         return 'policies/' + self.CITY + '_' + self.STRUCTURE + '_' + str(self.N_BATT) + '_' + str(self.N_SOLAR) + cap + '_policy.pkl'
+    def pickle_file_name_grid_down(self):
+        return 'policies/' + self.CITY + '_' + self.STRUCTURE + '_' + str(self.N_BATT) + '_' + str(self.N_SOLAR) + '_GRIDDOWN_policy.pkl'
