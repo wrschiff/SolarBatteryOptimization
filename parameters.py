@@ -15,7 +15,7 @@ class Parameters:
         self.NO_GRID = NO_GRID
         self.PROB_FAIL = 0.3 # Probability of grid failure
         self.state_space = np.linspace(0,self.N_BATT*self.BATT_CAP,self.N_STATE_DISC)
-        self.GRID_DOWN_PROB = [random.uniform(0.01, 0.05) for _ in range(24)]
+        self.GRID_DOWN_PROB = [random.uniform(0.05, 0.1) for _ in range(24)]
         if 0 not in self.state_space:
             self.state_space = np.insert(self.state_space, 0, 0)
     def pickle_file_name(self):

@@ -124,6 +124,8 @@ def get_grid_down_energy_threshold(stage, parameters: Parameters):
     stage = stage % 24
     _, load_range = get_irr_and_load_range(stage, parameters)
     
-    # (upper - thres) / (upper - lower) * p(Grid Down) < 0.05 
+    # (upper - thres) / (upper - lower) * p(Grid Down) = 0.05 
     thres = load_range[1] - (load_range[1] - load_range[0]) * 0.05 / parameters.GRID_DOWN_PROB[stage]
+    if abs(thres - load_range[0]) < 1e-8:
+        thres = 0
     return thres

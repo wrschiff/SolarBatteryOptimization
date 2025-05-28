@@ -2,7 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import dynamics
 from parameters import *
-parameters = Parameters(N_SOLAR=2, STRUCTURE='A')
+import plotting
+
+parameters = Parameters(N_SOLAR=0, STRUCTURE='A', MAX_STAGE=24*40, N_BATT=0)
 state_space = np.linspace(0, parameters.N_BATT * parameters.BATT_CAP, parameters.N_STATE_DISC)
 cost_to_go = np.zeros((parameters.MAX_STAGE + 1, parameters.N_STATE_DISC))
 policy = np.zeros((parameters.MAX_STAGE + 1, parameters.N_STATE_DISC))
@@ -43,5 +45,7 @@ def solve():
     return cost_to_go
 
 if __name__ == "__main__":
-    print(solve()[0, 0])
-    print(policy[:,0])
+    solve()
+    memo = plotting.from_arr_to_dict(policy, parameters)
+    plotting.plot_policy_states(memo, dynamics.next_state, parameters)
+    plt.show()

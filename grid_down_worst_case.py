@@ -2,7 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import dynamics
 from parameters import *
-parameters = Parameters(N_SOLAR=2, STRUCTURE='A', MAX_STAGE=24*1)
+import plotting
+
+parameters = Parameters(N_SOLAR=2, STRUCTURE='A')
+cities = ['Phoenix', 'Sacramento', 'Seattle']
 state_space = np.linspace(0, parameters.N_BATT * parameters.BATT_CAP, parameters.N_STATE_DISC)
 cost_to_go = np.zeros((parameters.MAX_STAGE + 1, parameters.N_STATE_DISC))
 policy = np.zeros((parameters.MAX_STAGE + 1, parameters.N_STATE_DISC))
@@ -48,8 +51,6 @@ def solve():
 
 if __name__ == "__main__":
     solve()
-    print(policy[0, 0])
-    print(dynamics.get_grid_down_energy_threshold(1, parameters))
-    plt.imshow(cost_to_go.T, aspect='auto', cmap='viridis', origin='lower')
-    plt.colorbar(label='Control')
+    memo = plotting.from_arr_to_dict(policy, parameters)
+    plotting.plot_policy_states(memo, dynamics.next_state, parameters)
     plt.show()
