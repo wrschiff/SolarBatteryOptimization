@@ -18,7 +18,7 @@ def plot_cost_function(memo, parameters: Parameters):
     all_costs = []
     for stage in range(parameters.MAX_STAGE + 1):
         states = [a[1] for a in memo.keys() if a[0] == stage]
-        costs = [np.log(memo[(stage, state)][1]) for state in states]
+        costs = [memo[(stage, state)][1] for state in states]
         all_stages.extend([stage] * len(states))
         all_states.extend(states)
         all_costs.extend(costs)
@@ -81,6 +81,34 @@ def plot_policy_states(policy, next_state, parameters: Parameters):
     ax.set_xlabel('Stage')
     ax.set_ylabel('State')
     ax.set_title('Policy States for ' + parameters.CITY + ' with ' + parameters.STRUCTURE + ' structure')
+
+def plot_policy_boxes(policy, parameters: Parameters):
+    pos_states = {}
+    neg_states = {}
+    for stage in range(parameters.MAX_STAGE):
+        pos_state = None
+        neg_state = None
+        for (s, state), control in policy.items():
+            if s == stage and control > 0:
+                if pos_state is None or state > pos_state:
+                    pos_state = state
+            elif s == stage and control < 0:
+                if neg_state is None or state > neg_state:
+                    neg_state = state
+        pos_states[stage] = pos_state
+        neg_states[stage] = neg_state
+        print('Largest state with nonzero control at stage', stage, 'is', pos_state)
+       
+    fig, ax = plt.subplots()
+    stages = list(pos_states.keys())
+    pos_state_values = [pos_states[stage] if pos_states[stage] is not None else 0 for stage in stages]
+    neg_state_values = [neg_states[stage] if neg_states[stage] is not None else 0 for stage in stages]
+    ax.bar(stages, pos_state_values, width=0.8, align='center', color='green', edgecolor='black')
+    ax.bar(stages, neg_state_values, width=0.8, align='center', color='red', edgecolor='black')
+    ax.set_xlabel('Stage')
+    ax.set_ylabel('State')
+    ax.set_title('Policy Thresholds for ' + parameters.CITY + ' with ' + parameters.STRUCTURE + ' structure')
+
 
 def plot_tester_states(states):
     plt.figure()
