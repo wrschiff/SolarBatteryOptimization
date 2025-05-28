@@ -46,11 +46,6 @@ if __name__ == "__main__":
     plot_cost_function(memo,params)
     plot_policy_states(policy, next_state,params)
     plot_state_cost(0,memo,params)
-    
-    plt.show()
-    # 
-    # 
-    # for state in start_states:
-    #     plot_state_cost(state, memo, params)    
+    plt.show() 
 
 
