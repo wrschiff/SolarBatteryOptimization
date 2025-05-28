@@ -127,8 +127,8 @@ def plot_policy_boxes(policy, parameters: Parameters):
     ax.bar(n_stages, nheights, width=0.8, align='center', color='red', edgecolor='black', bottom=nmin_states, label='Discharging')
     ax.set_xlabel('Stage')
     ax.set_ylabel('State')
-    ax.set_title('Policy Thresholds for ' + parameters.CITY + ' with ' + parameters.STRUCTURE + ' structure for Economy')
-    ax.legend()
+    ax.set_title('Policy Thresholds for ' + parameters.CITY + ' with ' + parameters.STRUCTURE + ' structure for Emission')
+    ax.legend(loc='upper left')
 
 def plot_tester_states(states):
     plt.figure()
