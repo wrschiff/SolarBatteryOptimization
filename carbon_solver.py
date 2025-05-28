@@ -34,7 +34,7 @@ def _solve(stage: int, state: float,parameters):
     return min(controls_to_costs.items(), key=lambda x: x[1])
 
 if __name__ == "__main__":
-    params = parameters.Parameters(N_BATT=5,N_SOLAR=20,CITY='Phoenix',STRUCTURE='B')  # Create a parameters instance
+    params = parameters.Parameters(N_BATT=5,N_SOLAR=20,CITY='Sacramento',STRUCTURE='B',CARBON=True)  # Create a parameters instance
     start_states = np.linspace(0, params.N_BATT * params.BATT_CAP, params.N_STATE_DISC)
     costs = dict()
     memo.clear()
@@ -46,7 +46,9 @@ if __name__ == "__main__":
     plot_cost_function(memo,params)
     plot_policy_states(policy, next_state,params)
     plot_state_cost(0,memo,params)
-    
+    filename = params.pickle_file_name()
+    with open(filename, 'wb') as f:
+        pickle.dump(policy, f)
     plt.show()
     # 
     # 

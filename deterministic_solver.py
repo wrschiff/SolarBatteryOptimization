@@ -34,7 +34,7 @@ def _solve(stage: int, state: float,parameters):
     return min(controls_to_costs.items(), key=lambda x: x[1])
 
 if __name__ == "__main__":
-    params = parameters.Parameters()  # Create a parameters instance
+    params = Parameters(MAX_STAGE=24)  # Create a parameters instance
     start_states = np.linspace(0, params.N_BATT * params.BATT_CAP, params.N_STATE_DISC)
     costs = dict()
     memo.clear()
@@ -44,9 +44,9 @@ if __name__ == "__main__":
     plot_cost_function(memo, params)
     policy = extract_policy(memo, params)
     plot_policy_states(policy, next_state, params)
-    filename = params.pickle_file_name()
-    with open(filename, 'wb') as f:
-        pickle.dump(policy, f)
+    plot_policy_boxes(policy,params)
     plt.show()
+    
+    
 
 

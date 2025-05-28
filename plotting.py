@@ -83,32 +83,52 @@ def plot_policy_states(policy, next_state, parameters: Parameters):
     ax.set_title('Policy States for ' + parameters.CITY + ' with ' + parameters.STRUCTURE + ' structure')
 
 def plot_policy_boxes(policy, parameters: Parameters):
-    pos_states = {}
-    neg_states = {}
+    pmin_states = []
+    pmax_states = []
+    nmax_states = []
+    nmin_states = []
+    p_stages = []
+    n_stages = []
     for stage in range(parameters.MAX_STAGE):
-        pos_state = None
-        neg_state = None
-        for (s, state), control in policy.items():
-            if s == stage and control > 0:
-                if pos_state is None or state > pos_state:
-                    pos_state = state
-            elif s == stage and control < 0:
-                if neg_state is None or state > neg_state:
-                    neg_state = state
-        pos_states[stage] = pos_state
-        neg_states[stage] = neg_state
-        print('Largest state with nonzero control at stage', stage, 'is', pos_state)
-       
+        pos_states = [state for (s, state), control in policy.items() if s == stage and control > 0]
+        neg_states = [state for (s, state), control in policy.items() if s == stage and control < 0]
+        if pos_states:
+            min_state = min(pos_states)
+            max_state = max(pos_states)
+            if max_state-min_state < 1:  # if the range is too small, skip
+              pmin_states.append(0)
+              pmax_states.append(0)
+            else:
+                pmin_states.append(min_state)
+                pmax_states.append(max_state)
+            p_stages.append(stage)
+            nmax_states.append(0)
+            nmin_states.append(0)
+            n_stages.append(stage)
+
+        elif neg_states:
+            min_state = min(neg_states)
+            max_state = max(neg_states)
+            if max_state-min_state < 1:  # if the range is too small, skip
+              nmin_states.append(0)
+              nmax_states.append(0)
+            else:  
+                nmin_states.append(min_state)
+                nmax_states.append(max_state)
+            n_stages.append(stage)
+            p_stages.append(stage)
+            pmin_states.append(0)
+            pmax_states.append(0)
+    pheights = [pmax_states[i] - pmin_states[i] for i in range(len(p_stages))]
+    nheights = [nmax_states[i] - nmin_states[i] for i in range(len(n_stages))]
+    
     fig, ax = plt.subplots()
-    stages = list(pos_states.keys())
-    pos_state_values = [pos_states[stage] if pos_states[stage] is not None else 0 for stage in stages]
-    neg_state_values = [neg_states[stage] if neg_states[stage] is not None else 0 for stage in stages]
-    ax.bar(stages, pos_state_values, width=0.8, align='center', color='green', edgecolor='black')
-    ax.bar(stages, neg_state_values, width=0.8, align='center', color='red', edgecolor='black')
+    ax.bar(p_stages, pheights, width=0.8, align='center', color='green', edgecolor='black', bottom=pmin_states, label='Charging')
+    ax.bar(n_stages, nheights, width=0.8, align='center', color='red', edgecolor='black', bottom=nmin_states, label='Discharging')
     ax.set_xlabel('Stage')
     ax.set_ylabel('State')
-    ax.set_title('Policy Thresholds for ' + parameters.CITY + ' with ' + parameters.STRUCTURE + ' structure')
-
+    ax.set_title('Policy Thresholds for ' + parameters.CITY + ' with ' + parameters.STRUCTURE + ' structure for Economy')
+    ax.legend()
 
 def plot_tester_states(states):
     plt.figure()
