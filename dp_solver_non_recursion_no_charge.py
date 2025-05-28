@@ -78,4 +78,4 @@ if __name__ == "__main__":
     print(cost_to_go[0, 25])
     plt.imshow(policy.T, aspect='auto', cmap='viridis', origin='lower')
     plt.colorbar(label='Control')
-    plt.show(  )
+    plt.show()

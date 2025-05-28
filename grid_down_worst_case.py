@@ -2,7 +2,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import dynamics
 from parameters import *
-parameters = Parameters(N_SOLAR=2, STRUCTURE='A', MAX_STAGE=24*1)
+import plotting
+import pickle
+
+parameters = Parameters(N_SOLAR=5, STRUCTURE='A', MAX_STAGE=24*200)
+cities = ['Phoenix', 'Sacramento', 'Seattle']
+structures = ['A', 'B', 'C']
 state_space = np.linspace(0, parameters.N_BATT * parameters.BATT_CAP, parameters.N_STATE_DISC)
 cost_to_go = np.zeros((parameters.MAX_STAGE + 1, parameters.N_STATE_DISC))
 policy = np.zeros((parameters.MAX_STAGE + 1, parameters.N_STATE_DISC))
@@ -47,9 +52,14 @@ def solve():
     return cost_to_go
 
 if __name__ == "__main__":
-    solve()
-    print(policy[0, 0])
-    print(dynamics.get_grid_down_energy_threshold(1, parameters))
-    plt.imshow(cost_to_go.T, aspect='auto', cmap='viridis', origin='lower')
-    plt.colorbar(label='Control')
-    plt.show()
+    for city in cities:
+        parameters.CITY = city
+        for structure in structures:
+            parameters.STRUCTURE = structure
+            print(f"Solving for {city} with structure {structure}...")
+            cost_to_go = solve()
+            memo = plotting.from_arr_to_dict(policy, parameters)
+            policy_file = parameters.pickle_file_name_grid_down()
+            with open(policy_file, 'wb') as f:
+                pickle.dump(memo, f)
+            print(f"Policy saved to {policy_file}")

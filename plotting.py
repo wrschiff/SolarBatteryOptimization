@@ -112,3 +112,6 @@ def plot_tester_cum_costs(costs):
              f'Avg. tot.: {avg_cum_cost:.2f}\nAvg. per day: {avg_cum_cost/(len(costs[0])/24):.2f}', 
              ha='left', va='top')
     plt.legend()
+
+def from_arr_to_dict(arr, parameters: Parameters):
+    return {(i, parameters.state_space[j]): arr[i, j] for i in range(arr.shape[0]) for j in range(arr.shape[1])}
