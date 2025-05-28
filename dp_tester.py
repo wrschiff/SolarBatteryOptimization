@@ -28,7 +28,6 @@ def test_policy(num_sim, length, policy, parameters):
 
             # pick control
             opt_control = policy_control(mod_i, i_state, policy)
-
             # update state
             cost = arbitrage_cost(mod_i, opt_control, load, solar, parameters)
             i_state = next_state(i_state, opt_control, parameters=parameters)
