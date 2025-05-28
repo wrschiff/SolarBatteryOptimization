@@ -5,7 +5,7 @@ from parameters import *
 import plotting
 import pickle
 
-parameters = Parameters(N_SOLAR=2, STRUCTURE='A')
+parameters = Parameters(N_SOLAR=5, STRUCTURE='A', MAX_STAGE=24*200)
 cities = ['Phoenix', 'Sacramento', 'Seattle']
 structures = ['A', 'B', 'C']
 state_space = np.linspace(0, parameters.N_BATT * parameters.BATT_CAP, parameters.N_STATE_DISC)
@@ -56,9 +56,10 @@ if __name__ == "__main__":
         parameters.CITY = city
         for structure in structures:
             parameters.STRUCTURE = structure
-            fn = parameters.pickle_file_name_grid_down()
-            solve()
+            print(f"Solving for {city} with structure {structure}...")
+            cost_to_go = solve()
             memo = plotting.from_arr_to_dict(policy, parameters)
-            with open(fn, 'wb') as f:
+            policy_file = parameters.pickle_file_name_grid_down()
+            with open(policy_file, 'wb') as f:
                 pickle.dump(memo, f)
-                print(f"Policy saved at {fn} for {city} with structure {structure}.")
+            print(f"Policy saved to {policy_file}")
