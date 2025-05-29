@@ -18,7 +18,7 @@ def plot_cost_function(memo, parameters: Parameters):
     all_costs = []
     for stage in range(parameters.MAX_STAGE + 1):
         states = [a[1] for a in memo.keys() if a[0] == stage]
-        costs = [np.log(memo[(stage, state)][1]) for state in states]
+        costs = [memo[(stage, state)][1] for state in states]
         all_stages.extend([stage] * len(states))
         all_states.extend(states)
         all_costs.extend(costs)
@@ -81,6 +81,54 @@ def plot_policy_states(policy, next_state, parameters: Parameters):
     ax.set_xlabel('Stage')
     ax.set_ylabel('State')
     ax.set_title('Policy States for ' + parameters.CITY + ' with ' + parameters.STRUCTURE + ' structure')
+
+def plot_policy_boxes(policy, parameters: Parameters):
+    pmin_states = []
+    pmax_states = []
+    nmax_states = []
+    nmin_states = []
+    p_stages = []
+    n_stages = []
+    for stage in range(parameters.MAX_STAGE):
+        pos_states = [state for (s, state), control in policy.items() if s == stage and control > 0]
+        neg_states = [state for (s, state), control in policy.items() if s == stage and control < 0]
+        if pos_states:
+            min_state = min(pos_states)
+            max_state = max(pos_states)
+            if max_state-min_state < 1:  # if the range is too small, skip
+              pmin_states.append(0)
+              pmax_states.append(0)
+            else:
+                pmin_states.append(min_state)
+                pmax_states.append(max_state)
+            p_stages.append(stage)
+            nmax_states.append(0)
+            nmin_states.append(0)
+            n_stages.append(stage)
+
+        elif neg_states:
+            min_state = min(neg_states)
+            max_state = max(neg_states)
+            if max_state-min_state < 1:  # if the range is too small, skip
+              nmin_states.append(0)
+              nmax_states.append(0)
+            else:  
+                nmin_states.append(min_state)
+                nmax_states.append(max_state)
+            n_stages.append(stage)
+            p_stages.append(stage)
+            pmin_states.append(0)
+            pmax_states.append(0)
+    pheights = [pmax_states[i] - pmin_states[i] for i in range(len(p_stages))]
+    nheights = [nmax_states[i] - nmin_states[i] for i in range(len(n_stages))]
+    
+    fig, ax = plt.subplots()
+    ax.bar(p_stages, pheights, width=0.8, align='center', color='green', edgecolor='black', bottom=pmin_states, label='Charging')
+    ax.bar(n_stages, nheights, width=0.8, align='center', color='red', edgecolor='black', bottom=nmin_states, label='Discharging')
+    ax.set_xlabel('Stage')
+    ax.set_ylabel('State')
+    ax.set_title('Grid Down Policy Thresholds for ' + parameters.CITY + ' with ' + parameters.STRUCTURE + ' structure')
+    ax.legend(loc='upper left')
 
 def plot_tester_states(states):
     plt.figure()
