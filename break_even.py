@@ -36,21 +36,16 @@ with open('avg_day_costs.pkl', 'rb') as f:
     avg_day_costs = pickle.load(f)
 
 break_even_times = {}
-
+daily_savings = {}
 for city in ['Phoenix', 'Sacramento', 'Seattle']:
     for struc in ['A', 'B', 'C']:
         for num_solar in range(21):
             for num_batt in range(6):
                 params = parameters.Parameters(CITY=city, STRUCTURE=struc, N_SOLAR=num_solar, N_BATT=num_batt)
-                equipment_cost = calc_equip_cost(params)
                 avg_cost = avg_day_costs[params.pickle_file_name()]
                 avg_cost_without_equipment = expected[city, struc]
-                daily_savings = avg_cost_without_equipment - avg_cost
-                if daily_savings > 0:
-                    break_even_time = (equipment_cost / daily_savings)
-                else:
-                    break_even_time = float('inf')
-                break_even_times[(city, struc, num_solar, num_batt)] = break_even_time
+                daily_savings[params.pickle_file_name()] = avg_cost_without_equipment - avg_cost
+
 for city in ['Phoenix', 'Sacramento', 'Seattle']:
     for struct in ['A', 'B', 'C']:
         fig, ax = plt.subplots()
@@ -61,31 +56,28 @@ for city in ['Phoenix', 'Sacramento', 'Seattle']:
 
         for i in range(6):
             for j in range(21):
-                break_even_days = break_even_times[(city, struct, j, i)]
-                break_even_years = break_even_days / 365
-                Z[i, j] = break_even_years if break_even_years <= 50 else 60
+                params = parameters.Parameters(CITY=city, STRUCTURE=struct, N_SOLAR=j, N_BATT=i)
+                Z[i, j] = daily_savings[params.pickle_file_name()]
 
-        cmap = plt.cm.get_cmap('Oranges')
-        cs = ax.pcolor(X, Y, Z, cmap=cmap, edgecolors='black', linewidths=0.1, vmin=1, vmax=50)
+        cmap = plt.cm.get_cmap('Blues')
+        cs = ax.pcolor(X, Y, Z, cmap=cmap, edgecolors='black', linewidths=0.1, vmin=-1, vmax=15)
 
         for i in range(6):
             for j in range(21):
-                break_even_days = break_even_times[(city, struct, j, i)]
-                break_even_years = break_even_days / 365
-                if break_even_years < 1:
-                    ax.text(j, i, '<1', ha='center', va='center', size=8, color='black')
-                elif break_even_years < 50:
-                    ax.text(j, i, int(break_even_years), ha='center', va='center', size=8, color='black')
+                params = parameters.Parameters(CITY=city, STRUCTURE=struct, N_SOLAR=j, N_BATT=i)
+                daily_savings_days = daily_savings[params.pickle_file_name()]
+                if daily_savings_days < 0:
+                    ax.text(j, i, '0', ha='center', va='center', size=8, color='black')
                 else:
-                    ax.text(j, i, '>50', ha='center', va='center', size=8, color='black')
+                    ax.text(j, i, f"{daily_savings_days:.2f}", ha='center', va='center', size=5, color='black')
 
         ax.set_xlabel('Number of Solar Panels')
         ax.set_ylabel('Number of Batteries')
-        ax.set_title(f'Break-Even Years for {city} {struct} Structure')
+        ax.set_title(f'Daily Savings for {city} {struct} Structure')
         ax.set_xticks(np.arange(21))
         ax.set_xticklabels([str(i) for i in range(21)])
         ax.set_yticks(np.arange(6))
         ax.set_yticklabels([str(i) for i in range(6)])
-        fig.savefig(os.path.join('figures/break_even', f'{city}_{struct}.png'), dpi=300, bbox_inches='tight')
+        fig.savefig(os.path.join('figures/daily_savings', f'{city}_{struct}.png'), dpi=300, bbox_inches='tight')
         plt.close(fig)
 

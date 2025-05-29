@@ -163,3 +163,52 @@ def plot_tester_cum_costs(costs):
 
 def from_arr_to_dict(arr, parameters: Parameters):
     return {(i, parameters.state_space[j]): arr[i, j] for i in range(arr.shape[0]) for j in range(arr.shape[1])}
+
+def pretty_policy_graph(policy,parameters):
+    import seaborn as sns
+    import matplotlib.pyplot as plt
+    import numpy as np
+    from scipy.interpolate import griddata
+
+    states = list(policy.keys())
+    values = list(policy.values())
+    stages = [state[0] for state in states]
+    state_nums = [state[1] for state in states]
+    
+    max_stage = max(stages)
+    max_state = max(state_nums)
+    
+    # Create a grid to interpolate onto
+    stage_grid = np.linspace(0, max_stage, num=500)
+    state_grid = np.linspace(0, max_state, num=500)
+    stage_grid, state_grid = np.meshgrid(stage_grid, state_grid)
+    
+    # Interpolate the policy values onto the grid
+    df = griddata((stages, state_nums), values, (stage_grid, state_grid), method='cubic', fill_value=0)
+    
+    sns.heatmap(df, cmap='RdBu', cbar_kws={'label': 'Control'})
+    plt.yticks(np.linspace(0, len(state_grid), 5), np.linspace(max_state, 0, 5, dtype=int))
+    plt.xticks(np.linspace(0, len(stage_grid), 5), np.linspace(0, max_stage, 5, dtype=int))
+    plt.xlabel('Hour')
+    plt.ylabel('Energy Stored')
+    plt.title('Optimal Policy for ' + parameters.CITY + ' with ' + parameters.STRUCTURE + ' structure')
+    plt.show()
+def load_policy(parameters: Parameters):
+    """
+    Load a policy from a file.
+
+    This function opens a file specified by the provided parameters,
+    reads the policy data using the pickle module, and returns the
+    loaded policy.
+
+    Args:
+        parameters (Parameters): An instance of the Parameters class
+            which provides the file name to load the policy from.
+
+    Returns:
+        dict: A dictionary representing the loaded policy.
+    """
+
+    import pickle
+    with open(parameters.pickle_file_name(), 'rb') as f:
+        return pickle.load(f)
