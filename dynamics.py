@@ -76,7 +76,8 @@ def arbitrage_cost(stage, control, load, solar, parameters: Parameters):
     [buy, sell] = buy_sell_rates(stage, STRUCTURE)
     rate = buy if p_grid > 0 else sell
     return p_grid * rate
-
+def solar_from_irr(irr, parameters: Parameters):
+    return irr * parameters.N_SOLAR * parameters.AREA_SOLAR * parameters.SOL_EFFICIENCY
 def buy_sell_rates(stage, structure):
     if structure == 'A':
         return 0.15, 0.15

@@ -201,6 +201,49 @@ else:
         pickle.dump(spec_state_dict, f)
     with open('spec_cost_dict.pkl', 'wb') as f:
         pickle.dump(spec_cost_dict, f)
+# Simulate "self-sufficient"
+def build_self_sufficient_policy(opt_policy, params):
+    keys = opt_policy.keys()
+    new_policy = dict()
+    for k in keys:
+        # buy at cheapest rate, sell at most expensive
+        stage = k[0]
+        state = k[1]
+        irr_range, load_range = dynamics.get_irr_and_load_range(stage, params)
+        load_max = load_range[1]
+        irr_min = irr_range[0]
+        solar_min = dynamics.solar_from_irr(irr_min, params)
+        surplus = solar_min - load_max
+        if surplus > 0:
+            new_policy[k] = min(params.N_BATT * params.BATT_CAP - state, params.N_BATT * 2, surplus)
+        else:
+            new_policy[k] = 0
+    return new_policy
+if os.path.exists('self_sufficient_state_dict.pkl') and os.path.exists('self_sufficient_dict.pkl'):
+    with open('self_sufficient_dict.pkl', 'rb') as f:
+        self_sufficient_state_dict = pickle.load(f)
+    with open('self_sufficient_dict.pkl', 'rb') as f:
+        self_sufficient_cost_dict = pickle.load(f)
+else:
+    self_sufficient_state_dict = {}
+    self_sufficient_cost_dict = {}
+    for i,struc in enumerate(structures):
+        params.STRUCTURE = struc
+        batt = batts[i]
+        solar = 20
+        for city in cities:
+            params.CITY = city
+            params.N_BATT = batt
+            params.N_SOLAR = solar
+            fn = params.pickle_file_name()
+            with open(fn, 'rb') as f:
+                policy = pickle.load(f)
+            self_sufficient_policy = build_self_sufficient_policy(policy, params)
+            self_sufficient_state_dict[fn],self_sufficient_cost_dict[fn] = dp_tester.test_policy(5, 24*LENGTH, self_sufficient_policy, params)
+    with open('self_sufficient_state_dict.pkl', 'wb') as f:
+        pickle.dump(self_sufficient_state_dict, f)
+    with open('self_sufficient_cost_dict.pkl', 'wb') as f:
+        pickle.dump(self_sufficient_cost_dict, f)
 # Plot states through time for speculator and optimal
 for i, struc in enumerate(structures):
     for city in cities:
@@ -212,17 +255,21 @@ for i, struc in enumerate(structures):
             print(f"Plotting states through time for {city}, {struc} structure")
             opt_states = []
             spec_states = []
+            self_sufficient_states = []
             for fn in state_dict.keys():
                 fn_city, fn_struc, _, _, _ = fn[9:].split('_')
                 if fn_struc == struc and fn_city == city:
                     opt_states.extend(state_dict[fn])
                     spec_states.extend(spec_state_dict[fn])
+                    self_sufficient_states.extend(self_sufficient_state_dict[fn])
             
             avg_opt_state = np.mean(opt_states, axis=0)
             avg_spec_state = np.mean(spec_states, axis=0)
+            avg_self_sufficient_state = np.mean(self_sufficient_states, axis=0)
 
             plt.plot(avg_opt_state, label='Optimal Policy')
             plt.plot(avg_spec_state, label='Speculator Policy')
+            plt.plot(avg_self_sufficient_state, label='Self-Sufficient Policy')
             plt.xlabel('Time Steps')
             plt.ylabel('State Value')
             plt.title(f"{city}, {struc} structure")
@@ -241,17 +288,21 @@ for i, struc in enumerate(structures):
             print(f"Plotting cumulative costs through time for {city}, {struc} structure")
             opt_costs = []
             spec_costs = []
+            self_sufficient_costs = []
             for fn in cost_dict.keys():
                 fn_city, fn_struc, _, _, _ = fn[9:].split('_')
                 if fn_struc == struc and fn_city == city:
                     opt_costs.extend(cost_dict[fn])
                     spec_costs.extend(spec_cost_dict[fn])
+                    self_sufficient_costs.extend(self_sufficient_cost_dict[fn])
             
             cum_opt_cost = np.cumsum(np.mean(opt_costs, axis=0))
             cum_spec_cost = np.cumsum(np.mean(spec_costs, axis=0))
+            cum_self_sufficient_cost = np.cumsum(np.mean(self_sufficient_costs, axis=0))
 
             plt.plot(cum_opt_cost, label='Optimal Policy')
             plt.plot(cum_spec_cost, label='Speculator Policy')
+            plt.plot(cum_self_sufficient_cost, label='Self-Sufficient Policy')
             plt.xlabel('Time Steps')
             plt.ylabel('Cumulative Cost Value')
             plt.title(f"{city}, {struc} structure")
