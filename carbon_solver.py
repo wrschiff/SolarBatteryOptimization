@@ -34,22 +34,25 @@ def _solve(stage: int, state: float,parameters):
     return min(controls_to_costs.items(), key=lambda x: x[1])
 
 if __name__ == "__main__":
-    params = parameters.Parameters(N_BATT=5,N_SOLAR=20,CITY='Sacramento',STRUCTURE='B',CARBON=True)  # Create a parameters instance
-    start_states = np.linspace(0, params.N_BATT * params.BATT_CAP, params.N_STATE_DISC)
-    costs = dict()
-    memo.clear()
-    for state in start_states:
-        out = solve(stage=0, state=state, parameters=params)
-        costs[state] = out[1]
-        
-    policy = extract_policy(memo,params)        
-    plot_cost_function(memo,params)
-    plot_policy_states(policy, next_state,params)
-    plot_state_cost(0,memo,params)
-    filename = params.pickle_file_name()
-    with open(filename, 'wb') as f:
-        pickle.dump(policy, f)
-    plt.show()
+    for city in ['Phoenix', 'Sacramento', 'Seattle']:
+        for structure in ['A', 'B', 'C']:    
+            params = parameters.Parameters(N_BATT=5,N_SOLAR=20,CITY=city,STRUCTURE=structure,CARBON=True)  # Create a parameters instance
+            start_states = np.linspace(0, params.N_BATT * params.BATT_CAP, params.N_STATE_DISC)
+            costs = dict()
+            memo.clear()
+            for state in start_states:
+                out = solve(stage=0, state=state, parameters=params)
+                costs[state] = out[1]
+                
+            policy = extract_policy(memo,params)        
+            #plot_cost_function(memo,params)
+            #plot_policy_states(policy, next_state,params)
+            #plot_state_cost(0,memo,params)
+            filename = params.pickle_file_name()
+            with open(filename, 'wb') as f:
+                pickle.dump(policy, f)
+            
+    #plt.show()
     # 
     # 
     # for state in start_states:

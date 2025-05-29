@@ -4,8 +4,9 @@ import dynamics
 from parameters import *
 import plotting
 import pickle
+from testpolicyworstcase import *
 
-parameters = Parameters(N_SOLAR=5, STRUCTURE='A', MAX_STAGE=24*200)
+parameters = Parameters(N_SOLAR=5,STRUCTURE='A', MAX_STAGE=24)
 cities = ['Phoenix', 'Sacramento', 'Seattle']
 structures = ['A', 'B', 'C']
 state_space = np.linspace(0, parameters.N_BATT * parameters.BATT_CAP, parameters.N_STATE_DISC)
@@ -56,10 +57,16 @@ if __name__ == "__main__":
         parameters.CITY = city
         for structure in structures:
             parameters.STRUCTURE = structure
-            print(f"Solving for {city} with structure {structure}...")
-            cost_to_go = solve()
-            memo = plotting.from_arr_to_dict(policy, parameters)
+            #print(f"Solving for {city} with structure {structure}...")
+            #cost_to_go = solve()
+            #memo = plotting.from_arr_to_dict(policy, parameters)
             policy_file = parameters.pickle_file_name_grid_down()
-            with open(policy_file, 'wb') as f:
-                pickle.dump(memo, f)
-            print(f"Policy saved to {policy_file}")
+            # with open(policy_file, 'wb') as f:
+            #     pickle.dump(memo, f)
+            # print(f"Policy saved to {policy_file}")
+            with open(policy_file, 'rb') as f:
+                memo = pickle.load(f)
+            plot_policy_boxes(memo, parameters)
+            #plot_policy_states(memo, next_state, params)
+            plt.savefig(f"figures/policy_thresholds/{city}_{parameters.STRUCTURE}_{parameters.N_BATT}_{parameters.N_SOLAR}threshold_GRIDDOWN.png")    
+            
